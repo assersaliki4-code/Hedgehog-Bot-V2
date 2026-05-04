@@ -1,38 +1,65 @@
-/**
- * @author NTKhang
- * ! The source code is written by NTKhang, please don't change the author's name everywhere. Thank you for using
- * ! Official source code: https://github.com/ntkhang03/Goat-Bot-V2
- * ! If you do not download the source code from the above address, you are using an unknown version and at risk of having your account hacked
- *
- * English:
- * ! Please do not change the below code, it is very important for the project.
- * It is my motivation to maintain and develop the project for free.
- * ! If you change it, you will be banned forever
- * Thank you for using
- *
- * Vietnamese:
- * ! Vui lòng không thay đổi mã bên dưới, nó rất quan trọng đối với dự án.
- * Nó là động lực để tôi duy trì và phát triển dự án miễn phí.
- * ! Nếu thay đổi nó, bạn sẽ bị cấm vĩnh viễn
- * Cảm ơn bạn đã sử dụng
- */
+const express = require('express');
+const axios = require('axios');
+const app = express();
+const port = process.env.PORT || 3000;
 
-const { spawn } = require("child_process");
-const log = require("./logger/log.js");
+app.get('/', (req, res) => {
+  res.send('Ariel Bot est en ligne ! 🤖');
+});
 
-function startProject() {
-	const child = spawn("node", ["Goat.js"], {
-		cwd: __dirname,
-		stdio: "inherit",
-		shell: true
-	});
+app.listen(port, () => {
+  console.log(`Serveur démarré`);
+});
 
-	child.on("close", (code) => {
-		if (code == 2) {
-			log.info("Restarting Project...");
-			startProject();
-		}
-	});
-}
+// ⚠️ METS TA CLÉ API ICI
+const OPENAI_API_KEY = 'TA_CLE_API_ICI';
 
-startProject();
+client.listen(async (err, message) => {
+  if (err) return console.error(err);
+  
+  const texte = message.body.toLowerCase();
+  const repondre = (texte) => message.send(texte);
+
+  // --------------------------
+  // 📛 SI TU L'APPELES PAR SON NOM
+  // --------------------------
+  if (texte.includes("ariel") || texte.includes("ariel bot")) {
+    repondre("🤖 Oui ! C'est moi Ariel Bot !\nComment puis-je t'aider ? 😊");
+  }
+
+  // --------------------------
+  // 🧠 COMMANDE AI
+  // --------------------------
+  if (texte.startsWith('ai')) {
+    const question = message.body.slice(2).trim();
+    
+    if (!question) {
+      return repondre("❓ Pose une question après 'ai' !");
+    }
+
+    try {
+      const reponse = await axios.post('https://api.openai.com/v1/chat/completions', {
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: question }]
+      }, {
+        headers: {
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      repondre(`🤖 Ariel Bot :\n\n${reponse.data.choices[0].message.content}`);
+
+    } catch (erreur) {
+      repondre("⚠️ Erreur avec l'IA.");
+    }
+  }
+
+  // --------------------------
+  // ℹ️ COMMANDE NOM / QUI ES TU
+  // --------------------------
+  if (texte.includes("ton nom") || texte.includes("qui es tu")) {
+    repondre("🤖 Je m'appelle Ariel Bot !");
+  }
+  
+});
